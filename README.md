@@ -1,56 +1,47 @@
 # **Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
-
-Overview
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+**Finding Lane Lines on the Road**
 
-In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
-
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
-
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+The goals / steps of this project are the following:
+* Make a pipeline that finds lane lines on the road
+* Reflect on your work in a written report
 
 
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
+[//]: # (Image References)
 
-1. Describe the pipeline
+[image1]: ./test_images_output/solidWhiteCurve.jpg "Solid White Curve"
 
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
 ---
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
+### Reflection
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) if you haven't already.
+### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
-**Step 2:** Open the code in a Jupyter Notebook
+My pipeline consists of 3 phases. First, I extract the edges from the image. Next, I mask out all image data outside a region of interest. Lastly, I draw the lane lines over the image.
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
+My edge extraction phase has 3 steps. First, I convert the image to grayscale. Next, I apply a gaussian blur. Lastly, I apply the Canny transform to select the edge pixels. The result is a black and white image with edges extracted.
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+My masking phase has 2 steps. First, I generate four vertices for the region of interest. Next, I apply this polygon to the edge extracted image as a mask. This erases any edges from the sky or side of the road.
 
-`> jupyter notebook`
+My draw lines phase has 4 steps. First, I calculate all the hough lines from the edges that remain in the masked image. Next, I separate the hough lines into left and right lists of lines. Third, I convert the 2 lists of lines into 2 single lines for the left and right lanes. Lastly, I superimpose the the two lane lines on top of the original input image.
 
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
+In order to draw a single line on the left and right lanes, I modified the draw_lines() function by separating the hough lines into left and right lists of lines. Next, I filtered both lists by minimum and maximum possible slopes. Third, I calculated the slopes and centers of the 2 lines by averaging the slopes and centers of the lines in both lists. Lastly, I derived the x coordinates of the endpoints for each lane line from the average slopes and centers.
 
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
+Here is my processed output from the `solidWhiteCurve.jpg`: 
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+![alt text][image1]
 
+Click on [this link](https://raw.githubusercontent.com/fvasquez/CarND-LaneLines-P1/master/test_videos_output/solidWhiteRight.mp4) to view my processed output for the `solidWhiteRight.mp4`. The other processed videos are in the `test_images_output` directory of this repo.
+
+Click on the [this link](https://raw.githubusercontent.com/fvasquez/CarND-LaneLines-P1/master/test_videos_output/solidYellowLeft.mp4)
+to download my processed output for the `solidYellowLeft.mp4`. I noticed that Firefox does not recognize the video format of this output `.mp4` but I can still play the video after I download it to my machine.
+
+### 2. Identify potential shortcomings with your current pipeline
+
+One potential shortcoming would be what would happen when the horizon line is higher than the y coordinate hardcoded into this notebook. The lane lines will crisscross.
+
+### 3. Suggest possible improvements to your pipeline
+
+A possible improvement would be to edge detect the y coordinate of the horizon line so that it can be used in region of interest and lane line endpoint calculations.
